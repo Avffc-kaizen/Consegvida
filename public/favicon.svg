@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ConsegVida">
+  <circle cx="32" cy="32" r="31" fill="#12203A"/>
+  <circle cx="32" cy="32" r="27.5" fill="none" stroke="#B89A5B" stroke-width="1.75"/>
+  <text x="32" y="42" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="34" fill="#F3EFE6">C</text>
+</svg>
