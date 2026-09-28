@@ -1,0 +1,14 @@
+:root {
+  --cv-navy: #12203A;
+  --cv-cream: #F3EFE6;
+  --cv-paper: #FFFDF8;
+  --cv-ink: #1C1D1A;
+  --cv-mute: #5C6460;
+  --cv-ice: #E7E4DC;
+  --cv-gold: #B89A5B;
+  --cv-fisico: #2F4A3C;
+  --cv-mental: #12203A;
+  --cv-espiritual: #6B5A3A;
+  --cv-display: "Fraunces", "Times New Roman", serif;
+  --cv-sans: "Inter", "Helvetica Neue", sans-serif;
+}
