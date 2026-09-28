@@ -1,0 +1,76 @@
+{
+  "title": "Por que o aviso não basta",
+  "lede": "Não se previne quem só acredita no perigo. Previne-se quem acredita no perigo e num ato barato que sabe executar.",
+  "formula": "Ameaça personalizada + ato crível + capacidade sentida + custo baixo + repetição.",
+  "not": ["Medo sem via", "Otimismo de caráter", "Aprender pela ferida", "Cotação no lugar do gesto", "Fase 2 antes da Fase 1"],
+  "prevention": {
+    "threat": "A mente faz duas contas: quão grave é e quão vulnerável eu sou — e, em paralelo, se a ação funciona, se eu consigo, e quanto custa agora.",
+    "biases": [
+      {"id": "otimismo", "title": "Otimismo irrealista", "line": "Acontece com os outros. Não comigo."},
+      {"id": "normalidade", "title": "Viés de normalidade", "line": "O cérebro prefere o roteiro do dia ao evento que ainda não viveu."},
+      {"id": "presente", "title": "Custo agora, dano depois", "line": "Vinte minutos hoje pesam mais do que o acidente que não ocorreu."}
+    ]
+  },
+  "hbm": {
+    "origin": "Anos 1950, rastreio gratuito de tuberculose. O exame era de graça. As pessoas não iam.",
+    "energy": "Suscetibilidade + gravidade = energia.",
+    "path": "Benefícios − barreiras = caminho.",
+    "cue": "O manifesto e a missão de 15 min são o cue.",
+    "warning": "Gravidade impressiona. Barreiras e benefícios predizem. Sem saldo da ação, o susto é ruído.",
+    "constructs": [
+      {"id": "suscetibilidade", "label": "Suscetibilidade", "line": "Pode acontecer comigo — nesta casa, neste corpo."},
+      {"id": "gravidade", "label": "Gravidade", "line": "Se acontecer, pesa. Horizonte, não pavor."},
+      {"id": "beneficios", "label": "Benefícios", "line": "Este gesto reduz esta ameaça."},
+      {"id": "barreiras", "label": "Barreiras", "line": "O preditor mais forte. Baixar para 10–20 min."},
+      {"id": "cue", "label": "Gatilho", "line": "Porta, frase que não cabe, manifesto."},
+      {"id": "autoeficacia", "label": "Autoeficácia", "line": "Eu consigo fazer isto hoje."}
+    ],
+    "stalls": [
+      {"id": "inconsciente", "title": "Inconsciente do risco", "line": "Falta suscetibilidade. O aviso ainda é notícia."},
+      {"id": "imovel", "title": "Convicto e imóvel", "line": "Barreiras altas ou autoeficácia baixa. O caso mais comum."},
+      {"id": "some", "title": "Age uma vez e some", "line": "O modelo clássico acabou. Entra manutenção, não novo susto."}
+    ]
+  },
+  "axes": {
+    "fisico": {
+      "label": "Físico",
+      "protects": "Corpo e entorno",
+      "manifesto": "Ambiente imediatamente mais seguro. Zero morte por doença evitável.",
+      "hbm": {
+        "suscetibilidade": "Este cômodo, esta porta, este corpo.",
+        "gravidade": "Doença evitável. Entorno inseguro.",
+        "beneficios": "Um risco corrigido hoje.",
+        "barreiras": "Vinte minutos. Olhar o cômodo.",
+        "cue": "Entrar em casa.",
+        "autoeficacia": "Varredura + corpo presente."
+      }
+    },
+    "mental": {
+      "label": "Mental",
+      "protects": "Propósito e foco",
+      "manifesto": "Consciência do próprio propósito. 99% realizam o que se propõem.",
+      "hbm": {
+        "suscetibilidade": "Vida sem frase.",
+        "gravidade": "Trinta anos sem propósito.",
+        "beneficios": "Uma linha que cabe.",
+        "barreiras": "A tarefa adiada.",
+        "cue": "A linha que não fecha.",
+        "autoeficacia": "Quinze minutos na tarefa."
+      }
+    },
+    "espiritual": {
+      "label": "Espiritual",
+      "protects": "Consciência e causa",
+      "manifesto": "Protege-te. Sê consciente. Só existe onde estás no mundo.",
+      "hbm": {
+        "suscetibilidade": "Ausência — não estar onde se está.",
+        "gravidade": "Proteger o outro e abandonar a si.",
+        "beneficios": "Cinco coisas neste lugar.",
+        "barreiras": "Planejar a fase 2.",
+        "cue": "Só existe onde estás.",
+        "autoeficacia": "Proteger a si primeiro."
+      }
+    }
+  },
+  "horizon": "Crime a zero é horizonte de 30 anos do manifesto, não métrica atual."
+}
