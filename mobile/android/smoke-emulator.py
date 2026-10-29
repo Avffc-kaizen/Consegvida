@@ -38,6 +38,14 @@ def main() -> None:
 
     if adb("shell", "getprop", "ro.kernel.qemu").strip() != "1":
         raise SystemExit("Selected target does not identify itself as an emulator.")
+    api_level = int(adb("shell", "getprop", "ro.build.version.sdk").strip())
+    if api_level >= 33:
+        # Emulator-only configuration: exercise the platform gesture callback rather
+        # than merely sending KEYCODE_BACK, which has different API 36 behavior.
+        gesture_overlay = "com.android.internal.systemui.navbar.gestural"
+        if gesture_overlay not in adb("shell", "cmd", "overlay", "list"):
+            raise AssertionError("The selected emulator lacks the gesture-navigation overlay required by this smoke.")
+        adb("shell", "cmd", "overlay", "enable-exclusive", "--category", gesture_overlay)
 
     def dump():
         adb("shell", "uiautomator", "dump", "/sdcard/consegvida-smoke-ui.xml")
@@ -110,6 +118,15 @@ def main() -> None:
 
         tap("Missões")
         mental_action = "Ver missão: " + MISSION
+        tap_node(scroll_to(mental_action))
+        wait("← Voltar às missões")
+        if api_level >= 33:
+            adb("shell", "input", "swipe", "1", str(height // 2),
+                str(width * 3 // 5), str(height // 2), "350")
+        else:
+            adb("shell", "input", "keyevent", "KEYCODE_BACK")
+        wait("Escolha uma missão. Ao terminar, registre o que você fez neste aparelho.")
+        events.append("platform back gesture returned from mission to list" if api_level >= 33 else "legacy back returned from mission to list")
         tap_node(scroll_to(mental_action))
         tap_node(scroll_to("Começar esta missão"))
         tap_node(scroll_to("Concluir este cuidado"))

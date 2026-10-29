@@ -1,5 +1,6 @@
 package com.consegvida.app;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -90,7 +91,13 @@ public final class MainActivity extends Activity {
         out.putString("mission", missionId);
         super.onSaveInstanceState(out);
     }
-    @Override public void onBackPressed() { goBack(); }
+    // API 33+ uses the platform OnBackInvokedDispatcher registered in onCreate.
+    // This override is retained solely for the supported Android 26–32 devices.
+    @SuppressLint("GestureBackNavigation")
+    @Override public void onBackPressed() {
+        if (Build.VERSION.SDK_INT < 33) goBack();
+        else super.onBackPressed();
+    }
     private void goBack() {
         if (missionId != null) { missionId = null; screen = "missions"; render(); }
         else if (!"home".equals(screen)) { screen = "home"; render(); }

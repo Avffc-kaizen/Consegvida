@@ -43,6 +43,32 @@ Com SDK disponível, `xtool dev generate-xcode-project` é o comando oficial par
 
 Antes do lançamento: validar em iPhone/iPad as cinco abas, começar/concluir/reabrir, idempotência, mudança de dia/fuso, corrupção/recuperação, exclusão, VoiceOver, texto ampliado, rotação, link externo e ausência de coleta. A declaração de privacidade deve ser conferida novamente sobre o binário final e seus SDKs.
 
+### Archive de device sem assinatura
+
+Em um macOS com Xcode completo selecionado, SDK `iphoneos`, Python 3.9+ e xtool **1.24.0** verificado, executar da raiz do repositório:
+
+```bash
+bash mobile/ios/ci-archive-unsigned.sh
+```
+
+A variável `CONSEGVIDA_XTOOL_BIN` permite indicar o executável da instalação verificada do xtool. Este script não instala ferramentas. Deve rodar após a sincronização do conteúdo e dos ícones. Uma execução produz saídas em `mobile/ios/build/artifacts/unsigned-ios`; a pasta precisa estar ausente para evitar misturar artefatos de execuções diferentes. Os diagnósticos ficam em `mobile/ios/build/evidence/archive-unsigned`.
+
+O script usa uma cópia isolada dos fontes e preserva a dependência local `../core-swift`. Cria um catálogo `AppIcon` com o PNG canônico de 1024 × 1024 e usa o `actool` do Xcode para gerar as variações iPhone/iPad. A [Apple documenta esse formato de ícone de tamanho único](https://developer.apple.com/documentation/xcode/configuring-your-app-icon). O plist parcial e os recursos compilados entram pelos campos públicos `infoPath` e `resources` do xtool; o `project.pbxproj` gerado não recebe alterações manuais. Esse caminho está baseado no [gerador oficial do tag 1.24.0](https://github.com/xtool-org/xtool/blob/1.24.0/Sources/PackLib/XcodePacker.swift) e nos [argumentos do compilador de assets usados pelo Swift Build](https://github.com/swiftlang/swift-build/blob/main/Sources/SWBApplePlatform/Specs/AssetCatalogCompiler.xcspec).
+
+Após `xtool dev generate-xcode-project`, o script descobre o scheme da aplicação e executa `xcodebuild archive` em Release com destino `generic/platform=iOS`, `CODE_SIGNING_ALLOWED=NO`, `CODE_SIGNING_REQUIRED=NO` e equipe/identidade/perfil vazios. Não faz autenticação, provisionamento, assinatura de distribuição, exportação ou upload. Uma eventual assinatura ad hoc inserida pelo linker é registrada separadamente e só é aceita sem identidade/equipe.
+
+O resultado só é empacotado se o archive contiver uma única aplicação de device, Mach-O da plataforma iOS, identificador/versão corretos, ícones processados idênticos à saída do `actool`, metadados de ícone iPhone/iPad, `PrivacyInfo.xcprivacy` igual ao fonte e o conteúdo canônico dentro do bundle SwiftPM. Archives genéricos, resources ausentes ou assinaturas de identidade inesperadas fazem o script falhar. A verificação estrutural segue a distinção da Apple entre [archive de aplicação e archive genérico](https://developer.apple.com/documentation/technotes/tn3110-resolving-generic-xcode-archive-issue).
+
+As saídas são:
+
+- `ConsegVida-unsigned.xcarchive.zip`: archive Release para inspeção e posterior fluxo autorizado de assinatura/exportação.
+- `ConsegVida-Xcode-project.zip`: workspace/projeto gerado, fontes dos dois pacotes, conteúdo, catálogo de ícone e recursos compilados, preservando os caminhos relativos. Abra `mobile/ios/xtool/ConsegVida.xcworkspace` após descompactar.
+- `archive-validation.json`, `source-sha256.json` e `SHA256SUMS.txt`: escopo, verificações, versões das ferramentas e hashes dos fontes/artefatos.
+
+Esse archive não é uma IPA instalável e não comprova aceitação pela App Store. Confirmar o bundle ID provisório e a equipe do titular, executar aceitação em aparelho, revisar os dados da loja e realizar assinatura/exportação e validação pelo fluxo Apple permanecem gates de lançamento. O projeto inclui os assets já compilados; ao trocar o ícone ou SDK, regenere a partir do script no repositório. A [documentação de distribuição da Apple](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases) descreve a validação e exportação posteriores.
+
+Para CI, usar um job macOS próprio ou reservar tempo para uma compilação Release adicional; a duração ainda precisa ser medida no runner. Publicar `build/artifacts/unsigned-ios` apenas quando o script concluir e guardar `build/evidence/archive-unsigned` também em caso de falha. A execução do script em Linux não compila nem simula um archive iOS.
+
 ## Estado da entrega
 
 Este diretório contém código e configuração de desenvolvimento. Consultar o relatório de validação da raiz para os comandos realmente executados. Não considerar este README evidência de compilação iOS, IPA assinada, teste em aparelho, aprovação ou publicação.
