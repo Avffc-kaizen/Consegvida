@@ -1,0 +1,101 @@
+name: ConsegVida mobile preview
+
+on:
+  pull_request:
+    paths:
+      - 'mobile/**'
+      - 'src/data/philosophy.json'
+      - 'src/styles/tokens.css'
+      - 'src/lib/og/site.json'
+      - '.github/workflows/mobile-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android build and emulator journey
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Validate shared content and domain persistence
+        run: |
+          python3 mobile/scripts/sync_content.py --check
+          sh mobile/android/test-core.sh
+      - name: Build Android and run lint
+        working-directory: mobile/android
+        run: ./gradlew --no-daemon :app:assembleDebug :app:lintDebug
+      - name: Allow this ephemeral runner to use its emulator accelerator
+        run: |
+          test -c /dev/kvm
+          sudo chown "$(id -u):$(id -g)" /dev/kvm
+          sudo chmod 0600 /dev/kvm
+      - name: Test mission, restart, history and confirmed reset
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: |
+            adb -s emulator-5554 install -r mobile/android/app/build/outputs/apk/debug/app-debug.apk
+            ANDROID_SERIAL=emulator-5554 python3 mobile/android/smoke-emulator.py --output mobile/android/build/evidence
+      - name: Keep small preview artifacts for one day
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: consegvida-android-preview
+          retention-days: 1
+          if-no-files-found: warn
+          path: |
+            mobile/android/app/build/outputs/apk/debug/*.apk
+            mobile/android/app/build/reports/lint-results-debug.*
+            mobile/android/build/evidence/
+
+  ios:
+    name: Swift core and xtool iOS Simulator
+    runs-on: macos-26
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify Apple SDK and Swift core
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+          swift --version
+          python3 mobile/scripts/sync_content.py --check
+          swift test --package-path mobile/core-swift
+      - name: Install verified xtool release without account setup
+        run: |
+          curl --fail --location --retry 2 https://github.com/xtool-org/xtool/releases/download/1.24.0/xtool.app.zip -o "$RUNNER_TEMP/xtool.app.zip"
+          python3 - "$RUNNER_TEMP/xtool.app.zip" <<'PY'
+          import hashlib, pathlib, sys
+          expected = 'a56e98d69dea02a97a17e609f0ae8771c57ffaab23f1d62513fd9ada222026b3'
+          actual = hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest()
+          if actual != expected:
+              raise SystemExit('xtool release checksum mismatch')
+          PY
+          unzip -q "$RUNNER_TEMP/xtool.app.zip" -d "$RUNNER_TEMP/consegvida-xtool"
+          printf '%s\n' "CONSEGVIDA_XTOOL_BIN=$RUNNER_TEMP/consegvida-xtool/xtool.app/Contents/Resources/bin/xtool" >> "$GITHUB_ENV"
+      - name: Build and launch the unsigned iOS simulator preview
+        run: bash mobile/ios/ci-simulator.sh
+      - name: Keep simulator evidence for one day
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: consegvida-ios-simulator-evidence
+          retention-days: 1
+          if-no-files-found: warn
+          path: mobile/ios/build/evidence/

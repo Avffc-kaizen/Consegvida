@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "appName": "ConsegVida",
+  "phase": "Fase 1 — Despertar",
+  "tagline": "Segurança do ser humano.",
+  "introduction": "Um gesto possível hoje. Uma vida com mais presença.",
+  "manifestoURL": "https://www.youtube.com/watch?v=TkyLy-kIGhE",
+  "horizon": "Os objetivos de longo prazo do manifesto são um horizonte de 30 anos, não resultados comprovados.",
+  "privacy": "Seu progresso fica neste aparelho. Esta versão não cria conta, não usa anúncios ou rastreadores e não envia seu progresso a servidores. Você pode apagá-lo em Minha jornada. Ao abrir o vídeo do manifesto, você sai do aplicativo e passa a usar o serviço do YouTube.",
+  "colors": {
+    "navy": "#12203A",
+    "cream": "#F3EFE6",
+    "paper": "#FFFDF8",
+    "ink": "#1C1D1A",
+    "muted": "#5C6460",
+    "gold": "#B89A5B"
+  },
+  "axes": [
+    {"id":"fisico","label":"Físico","protects":"Corpo e entorno","color":"#2F4A3C"},
+    {"id":"mental","label":"Mental","protects":"Propósito e foco","color":"#12203A"},
+    {"id":"espiritual","label":"Espiritual","protects":"Consciência e causa","color":"#6B5A3A"}
+  ],
+  "missions": [
+    {
+      "id":"fisico-entorno",
+      "axis":"fisico",
+      "title":"Olhe o lugar onde você vive",
+      "minutes":20,
+      "summary":"Perceba um risco cotidiano e escolha um pequeno cuidado possível.",
+      "steps":["Observe um cômodo e o caminho por onde você passa.","Identifique um obstáculo simples que possa ser removido sem esforço ou risco.","Se a situação envolver eletricidade, gás, estrutura ou outro perigo, apenas registre mentalmente a necessidade de um profissional. Não faça reparos.","Escolha um cuidado seguro para hoje e marque a missão quando terminar."],
+      "source":"src/data/philosophy.json#/axes/fisico"
+    },
+    {
+      "id":"mental-foco",
+      "axis":"mental",
+      "title":"Dê quinze minutos ao que importa",
+      "minutes":15,
+      "summary":"Escolha uma tarefa adiada e um primeiro passo que caiba no seu dia.",
+      "steps":["Escolha uma tarefa pequena ligada ao que importa para você.","Defina o primeiro passo, sem precisar resolver tudo.","Reserve quinze minutos de atenção para esse passo.","Reconheça o que foi possível fazer e conclua a missão."],
+      "source":"src/data/philosophy.json#/axes/mental"
+    },
+    {
+      "id":"espiritual-presenca",
+      "axis":"espiritual",
+      "title":"Esteja onde você está",
+      "minutes":5,
+      "summary":"Uma pausa para perceber o lugar e escolher um cuidado com você.",
+      "steps":["Faça uma pausa em um lugar onde se sinta à vontade.","Observe cinco coisas ao seu redor, no seu ritmo.","Perceba um cuidado simples de que você precisa agora.","Escolha esse cuidado e conclua a missão. Esta prática não depende de religião."],
+      "source":"src/data/philosophy.json#/axes/espiritual"
+    }
+  ]
+}

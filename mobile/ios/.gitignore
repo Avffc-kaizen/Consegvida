@@ -1,0 +1,11 @@
+.build/
+.swiftpm/
+.bsp/
+xtool/
+DerivedData/
+build/
+*.ipa
+*.p12
+*.mobileprovision
+*.p8
+.netrc

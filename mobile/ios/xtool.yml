@@ -1,0 +1,7 @@
+version: 1
+bundleID: com.consegvida.app
+product: ConsegVida
+infoPath: Info.plist
+iconPath: Assets/AppIcon.png
+resources:
+  - PrivacyInfo.xcprivacy
