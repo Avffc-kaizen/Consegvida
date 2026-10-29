@@ -1,0 +1,32 @@
+name: Publish tested ConsegVida Android preview
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/mobile-publish-preview.yml'
+      - '.github/scripts/publish_android_preview.py'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: consegvida-android-v0.1.0-preview
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'Avffc-kaizen/Consegvida' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify the existing APK and publish its preview download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/publish_android_preview.py
