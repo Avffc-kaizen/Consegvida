@@ -3,6 +3,7 @@ package com.consegvida.app.core;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,6 +19,30 @@ public final class ProgressTests {
     private static void rejected(Throwing work, String label) throws Exception {
         try { work.run(); } catch (IllegalArgumentException | IOException expected) { checks++; return; }
         throw new AssertionError("Expected rejection: " + label);
+    }
+    private static void linkedProgressRequiresRecovery(ProgressState saved, boolean targetExists) throws Exception {
+        Path folder = Files.createTempDirectory("consegvida-linked-progress-");
+        Path file = folder.resolve("progress.json");
+        Path target = folder.resolve("other-progress.json");
+        String json = StateCodec.encode(saved);
+        String scenario = targetExists ? "existing target" : "missing target";
+        try {
+            if (targetExists) Files.writeString(target, json, StandardCharsets.UTF_8);
+            Files.createSymbolicLink(file, target.getFileName());
+            StateStore store = new StateStore(file);
+            rejected(() -> store.load(), "linked progress requires recovery: " + scenario);
+            check(Files.isSymbolicLink(file) && Files.readSymbolicLink(file).equals(target.getFileName()), "read preserves progress link: " + scenario);
+            check(targetExists ? Files.readString(target).equals(json) : Files.notExists(target, LinkOption.NOFOLLOW_LINKS), "read preserves link target: " + scenario);
+            store.reset(); // Recovery still requires the existing explicit UI confirmation.
+            check(Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS), "explicit reset replaces only progress link: " + scenario);
+            ProgressState reset = new StateStore(file).load();
+            check(reset.activeMission() == null && reset.completions().isEmpty(), "explicit recovery survives reload: " + scenario);
+            check(targetExists ? Files.readString(target).equals(json) : Files.notExists(target, LinkOption.NOFOLLOW_LINKS), "reset preserves link target: " + scenario);
+        } finally {
+            Files.deleteIfExists(file);
+            Files.deleteIfExists(target);
+            Files.deleteIfExists(folder);
+        }
     }
     public static void main(String[] args) throws Exception {
         String today = "2026-10-29";
@@ -113,6 +138,8 @@ public final class ProgressTests {
             Files.deleteIfExists(file);
             Files.deleteIfExists(folder);
         }
+        linkedProgressRequiresRecovery(done, false);
+        linkedProgressRequiresRecovery(done, true);
         System.out.println("PASS: " + checks + " Android domain/persistence checks");
     }
 }

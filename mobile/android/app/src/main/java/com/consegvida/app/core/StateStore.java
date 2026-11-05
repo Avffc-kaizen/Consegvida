@@ -12,6 +12,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 
 /** Durable replace: a failed write never becomes successful in-memory progress. */
 public final class StateStore {
@@ -27,21 +28,26 @@ public final class StateStore {
         this.mover = mover;
     }
     public ProgressState load() throws IOException {
-        try (FileChannel source = FileChannel.open(file, StandardOpenOption.READ)) {
-            if (source.size() > MAX_BYTES) throw new IOException("Arquivo de progresso maior que o limite de leitura.");
-            ByteBuffer buffer = ByteBuffer.allocate(MAX_BYTES + 1);
-            while (source.read(buffer) > 0) {
-                if (buffer.position() > MAX_BYTES) throw new IOException("Arquivo de progresso maior que o limite de leitura.");
+        try {
+            BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (!attributes.isRegularFile()) throw new IOException("O progresso salvo não é um arquivo regular.");
+            // Check the path without following links, then keep that rule when opening it.
+            try (FileChannel source = FileChannel.open(file, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
+                if (source.size() > MAX_BYTES) throw new IOException("Arquivo de progresso maior que o limite de leitura.");
+                ByteBuffer buffer = ByteBuffer.allocate(MAX_BYTES + 1);
+                while (source.read(buffer) > 0) {
+                    if (buffer.position() > MAX_BYTES) throw new IOException("Arquivo de progresso maior que o limite de leitura.");
+                }
+                buffer.flip();
+                String json = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
+                        .onUnmappableCharacter(CodingErrorAction.REPORT).decode(buffer).toString();
+                try { return StateCodec.decode(json); }
+                catch (IllegalArgumentException invalid) { throw new IOException(invalid.getMessage(), invalid); }
             }
-            buffer.flip();
-            String json = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT).decode(buffer).toString();
-            try { return StateCodec.decode(json); }
-            catch (IllegalArgumentException invalid) { throw new IOException(invalid.getMessage(), invalid); }
         } catch (NoSuchFileException missing) {
-            // Missing progress is the sole case that starts fresh. Permission/corruption never does.
-            if (Files.exists(file)) throw missing;
-            return ProgressState.empty();
+            // Only confirmed absence starts fresh; a dangling link or unknown access does not.
+            if (Files.notExists(file, LinkOption.NOFOLLOW_LINKS)) return ProgressState.empty();
+            throw missing;
         }
     }
     public void save(ProgressState state) throws IOException {

@@ -170,6 +170,39 @@ def main() -> None:
         tap("Jornada")
         wait("Ainda não há cuidados registrados. Sua jornada pode começar com cinco minutos.")
         events.append("reset survived relaunch")
+
+        # The debug app lives on the explicitly verified emulator above. Inject an
+        # invalid progress path there to exercise the actual native recovery screen.
+        progress_path = "no_backup/progress-v1.json"
+        missing_target = "smoke-missing-progress.json"
+        adb("shell", "am", "force-stop", PACKAGE)
+        adb("shell", "run-as", PACKAGE, "rm", progress_path)
+        adb("shell", "run-as", PACKAGE, "ln", "-s", missing_target, progress_path)
+        launch()
+        wait("Vamos cuidar do seu progresso")
+        tap("Tentar ler novamente")
+        wait("Vamos cuidar do seu progresso")
+        events.append("dangling progress link showed recovery and retry kept recovery visible")
+        tap("Apagar progresso e recomeçar")
+        wait("Apagar o progresso deste aparelho?")
+        tap("Manter meu progresso")
+        wait("Vamos cuidar do seu progresso")
+        if adb("shell", "run-as", PACKAGE, "readlink", progress_path).strip() != missing_target:
+            raise AssertionError("Reading or cancelling recovery changed the progress link")
+        capture("05-recovery-cancelled")
+        events.append("cancelling recovery preserved the invalid progress path")
+        tap("Apagar progresso e recomeçar")
+        wait("Apagar o progresso deste aparelho?")
+        tap("Apagar progresso")
+        wait("Escolher um cuidado")
+        adb("shell", "run-as", PACKAGE, "test", "!", "-L", progress_path)
+        adb("shell", "run-as", PACKAGE, "test", "!", "-e", "no_backup/" + missing_target)
+        adb("shell", "am", "force-stop", PACKAGE)
+        launch()
+        tap("Jornada")
+        wait("Ainda não há cuidados registrados. Sua jornada pode começar com cinco minutos.")
+        capture("06-recovered-after-restart")
+        events.append("confirmed recovery replaced the link without creating its target and survived relaunch")
         (output / "result.json").write_text(json.dumps({"status": "PASS", "serial": serial,
             "checks": events, "scope": "Android emulator UI; no physical-device or store validation"},
             ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
